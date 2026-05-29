@@ -1,0 +1,2098 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iep - IEP & IET Workshop Online Monitoring System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Custom scrollbar hiasan premium */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b1329;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        .safety-slider-track {
+            position: relative;
+            user-select: none;
+        }
+        .safety-slider-thumb {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="h-full text-slate-100 flex flex-col antialiased bg-slate-950">
+
+    <!-- Bar Navigasi Utama -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-3 sm:px-6 shadow-lg">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            
+            <!-- Logo Syarikat Rasmi "iep" berpandukan imej yang dimuat naik -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-white px-4 py-2 rounded-lg flex flex-col items-center leading-none shadow-md border border-slate-200 select-none">
+                    <div class="flex items-start">
+                        <span class="text-4xl font-extrabold text-[#E32619] tracking-tighter font-sans">iep</span>
+                        <span class="text-[9px] font-bold text-slate-800 ml-0.5 mt-0.5">TM</span>
+                    </div>
+                    <span class="text-[9px] italic font-serif text-slate-800 tracking-wide lowercase mt-1 font-bold">industrial electrical power</span>
+                </div>
+                <div class="h-10 w-[1px] bg-slate-800 hidden sm:block"></div>
+                <div class="hidden sm:block">
+                    <h1 class="text-xs font-extrabold text-slate-200 tracking-widest uppercase">PRO-TRACK</h1>
+                    <p class="text-[9px] text-slate-400 font-medium">IEP & IET Workshop Real-Time Monitoring</p>
+                </div>
+            </div>
+
+            <!-- Kawalan Mod Peranan dan Status -->
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <div class="flex flex-wrap items-center space-x-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                    <button id="btnRoleWorker" onclick="setRole('worker')" class="px-4 py-1.5 rounded-md text-xs font-bold transition-all duration-200 bg-emerald-500 text-slate-950 shadow-sm">
+                        👷 Worker Mode
+                    </button>
+                    <button id="btnRoleManager" onclick="setRole('manager')" class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-400 transition-all duration-200 hover:text-slate-200">
+                        📊 Manager Dashboard
+                    </button>
+                </div>
+
+                <!-- Penunjuk Sambungan Awan -->
+                <div id="syncIndicator" class="flex items-center space-x-2 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 text-xs">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span class="text-slate-400 font-medium font-mono" id="syncStatusText">Online</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Kawasan Kerja Utama -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+        <!-- Ringkasan Statistik Utama (Statik) -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div id="cardAll" class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-md transition-all">
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Projects</p>
+                    <p id="statTotal" class="text-2xl font-black text-slate-50 mt-1">0</p>
+                </div>
+                <div class="bg-blue-500/10 p-2.5 rounded-lg text-blue-400 text-xl shadow-inner">📁</div>
+            </div>
+            <div id="cardActive" class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-md transition-all">
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">In Progress</p>
+                    <p id="statActive" class="text-2xl font-black text-amber-400 mt-1">0</p>
+                </div>
+                <div class="bg-amber-500/10 p-2.5 rounded-lg text-amber-400 text-xl shadow-inner">⏳</div>
+            </div>
+            <div id="cardQc" class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-md transition-all border-emerald-500/10">
+                <div>
+                    <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Completed Task</p>
+                    <p id="statQC" class="text-2xl font-black text-emerald-400 mt-1">0</p>
+                </div>
+                <div class="bg-emerald-500/10 p-2.5 rounded-lg text-emerald-400 text-xl shadow-inner">✓</div>
+            </div>
+            <div id="cardOverdue" class="bg-slate-900 border border-slate-850 p-4 rounded-xl flex items-center justify-between shadow-md border-rose-500/10 transition-all">
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Overdue</p>
+                    <p id="statOverdue" class="text-2xl font-black text-rose-500 mt-1">0</p>
+                </div>
+                <div class="bg-rose-500/10 p-2.5 rounded-lg text-rose-400 text-xl shadow-inner">⚠️</div>
+            </div>
+        </div>
+
+        <!-- VIEWPORT A: ANTARAMUKA MOD PEKERJA -->
+        <div id="workerViewport" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Sisi Samping Kiri (Senarai PO & Tapisan Pantas) -->
+            <div class="lg:col-span-4 space-y-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4 shadow-xl">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-50">PO Projects</h2>
+                            <p class="text-[10px] text-slate-400 font-medium">Search and filter active shop work</p>
+                        </div>
+                        <button onclick="openCreateModal()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-lg transition-all shadow-sm">
+                            + New PO
+                        </button>
+                    </div>
+
+                    <!-- Input Carian -->
+                    <div class="relative">
+                        <input type="text" id="searchInput" oninput="filterJobs()" placeholder="Search client or PO number..." class="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 pl-3 pr-10 text-xs text-slate-300 focus:outline-none focus:border-emerald-500 transition-all">
+                        <span class="absolute right-3 top-2.5 text-slate-500 text-xs">🔍</span>
+                    </div>
+
+                    <!-- Butang Tab Tapisan Mod Pekerja -->
+                    <div class="grid grid-cols-4 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-850 text-[9px] font-bold">
+                        <button id="wTabAll" onclick="setWorkerFilter('all')" class="py-1.5 rounded bg-slate-800 text-slate-100 text-center transition-all">All</button>
+                        <button id="wTabActive" onclick="setWorkerFilter('active')" class="py-1.5 rounded text-slate-400 hover:text-slate-200 text-center transition-all">Progress</button>
+                        <button id="wTabOverdue" onclick="setWorkerFilter('overdue')" class="py-1.5 rounded text-slate-400 hover:text-slate-200 text-center transition-all text-rose-400/90">Overdue</button>
+                        <button id="wTabCompleted" onclick="setWorkerFilter('completed')" class="py-1.5 rounded text-slate-400 hover:text-slate-200 text-center transition-all text-emerald-400/90">Completed</button>
+                    </div>
+
+                    <!-- Bekas Senarai Projek PO -->
+                    <div id="jobListContainer" class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                        <div class="text-center py-8 text-slate-500 text-sm">Loading project files...</div>
+                    </div>
+                </div>
+
+                <!-- Log Aktiviti Masa Nyata -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg">
+                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Live Activity Log</h3>
+                    <div id="activityLog" class="space-y-2 text-xs max-h-[140px] overflow-y-auto">
+                        <div class="text-slate-500 text-center py-2">No activity detected yet.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stesen Kemas Kini Borang Fasa Demi Fasa Sisi Kanan -->
+            <div class="lg:col-span-8 space-y-4">
+                <div id="mainWorkstation" class="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6 min-h-[640px] flex flex-col justify-between shadow-2xl relative">
+                    
+                    <!-- Paparan Bersedia Sekiranya Tiada PO Dipilih -->
+                    <div id="workstationIdle" class="flex-1 flex flex-col items-center justify-center text-center p-8">
+                        <div class="bg-white/5 p-4 rounded-full mb-4">
+                            <span class="text-4xl font-extrabold text-[#E32619]">iep</span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-200">Please Select a PO Project</h3>
+                        <p class="text-xs text-slate-400 max-w-sm mt-1">Select a PO from the left panel to update technical fasa inputs, check compliance standards, and slide-to-confirm step completion.</p>
+                        <button onclick="selectFirstJob()" class="mt-4 bg-slate-850 hover:bg-slate-800 text-slate-200 text-xs font-semibold px-4 py-2 rounded-lg transition-all border border-slate-800">
+                            Select First PO
+                        </button>
+                    </div>
+
+                    <!-- Kawasan Kerja Borang PO Aktif -->
+                    <div id="workstationActive" class="hidden flex-1 flex flex-col space-y-6">
+                        <!-- Pengepala Utama PO Aktif -->
+                        <div id="wsHeaderCard" class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-4 p-3 rounded-lg bg-slate-950/40">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span id="wsBadge" class="bg-[#E32619]/15 text-[#E32619] text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">IEP Work</span>
+                                    <span id="overdueBadge" class="hidden bg-rose-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider animate-pulse">😡 OVERDUE</span>
+                                </div>
+                                <h2 id="wsTitle" class="text-xl font-bold text-slate-50 mt-1">Client Name</h2>
+                                <p class="text-xs text-slate-400 mt-1">
+                                    Project Name: <span id="wsProjectName" class="text-slate-100 font-bold">Project Name</span> |
+                                    PO No: <span id="wsPoNum" class="text-slate-200 font-semibold">PO-00000</span>
+                                </p>
+                                <p class="text-[10px] font-mono text-slate-400 mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                                    <span>Project ID: <span id="wsProjId" class="text-emerald-400 font-bold">IEP-YYYY-XXXX</span></span>
+                                    <span>Tracking: <span id="wsTrackNum" class="text-emerald-400 font-bold">TRK-XXXXXXXXXXXX</span></span>
+                                </p>
+                            </div>
+                            <div class="flex flex-col items-end gap-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-slate-400">Total Progress</span>
+                                    <span id="wsProgressPercent" class="text-sm font-bold text-emerald-400">0%</span>
+                                </div>
+                                <div class="w-36 bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                                    <div id="wsProgressFill" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full transition-all duration-500" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bar Garis Masa Langkah 1-Ke-8 -->
+                        <div class="relative overflow-x-auto pb-2 scrollbar-none">
+                            <div class="flex space-x-2 min-w-[760px] p-1">
+                                <div id="timelineContainer" class="flex w-full justify-between gap-1.5 font-sans"></div>
+                            </div>
+                        </div>
+
+                        <!-- Susun Atur Pecahan Borang Parameter & Jadual Rekod Masa Siap -->
+                        <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+                            
+                            <!-- Kiri: Borang Pengisian Fasa Interaktif -->
+                            <div class="xl:col-span-7 bg-slate-950 border border-slate-800 rounded-xl p-4 sm:p-5 flex flex-col justify-between min-h-[420px]" id="stepVisualCard">
+                                <div>
+                                    <!-- Pengepala Fasa -->
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 mb-4 gap-2">
+                                        <div class="flex items-center space-x-2.5">
+                                            <span id="stepIcon" class="text-2xl bg-slate-900 p-2 rounded-lg border border-slate-800">📝</span>
+                                            <div>
+                                                <h3 class="text-sm font-bold text-slate-200" id="stepTitle">Step 1</h3>
+                                                <p class="text-[11px] text-slate-400" id="stepSubtitle">Enter the corresponding data.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Banner Amaran Sekatan Kemajuan (Contoh: Drawing Belum Approved) -->
+                                    <div id="dependencyAlert" class="hidden bg-rose-950/45 border border-rose-500/20 text-rose-300 p-3 rounded-lg text-[11px] mb-4">
+                                        <!-- Mesej amaran disuntik oleh JS -->
+                                    </div>
+
+                                    <!-- Borang Dinamik Mengikut Setiap Fasa -->
+                                    <form id="activeStepForm" onsubmit="event.preventDefault();" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <!-- Borang dimuat naik dari JS secara dinamik -->
+                                    </form>
+                                </div>
+
+                                <!-- Bahagian Bawah Borang: Slaid Swap Keselamatan & Kemudi Langkah -->
+                                <div class="border-t border-slate-800 pt-4 mt-6 space-y-4">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <!-- Butang Slaid Swap Keselamatan Swap to Done -->
+                                        <div id="safetySliderWrapper" class="w-full sm:w-auto">
+                                            <p class="text-[10px] text-slate-400 mb-1.5 font-bold tracking-wider uppercase font-sans">Swipe/Click Swap Button to Toggle Done Status</p>
+                                            <div id="safetySliderTrack" class="safety-slider-track w-full sm:w-60 h-10 bg-slate-900 border border-slate-800 rounded-full flex items-center p-1 cursor-pointer overflow-hidden relative">
+                                                <span class="absolute left-4 text-[10px] font-bold text-slate-500 pointer-events-none select-none font-sans" id="slideLabelLeft">Not Sedia</span>
+                                                <span class="absolute right-4 text-[10px] font-bold text-emerald-500 pointer-events-none select-none font-sans" id="slideLabelRight">SELESAI (DONE)</span>
+                                                
+                                                <div id="safetySliderThumb" onclick="toggleSafetyState()" class="safety-slider-thumb w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-black shadow-lg cursor-pointer transform translate-x-0 border border-slate-600 z-10 hover:bg-slate-600 active:scale-95">
+                                                    🔒
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-[11px] text-slate-500 self-end">
+                                            Last Updated: <span id="wsLastUpdate" class="text-slate-400">--:-- --</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex justify-between items-center gap-2 pt-1">
+                                        <button type="button" onclick="navigateStep(-1)" class="bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-semibold px-4 py-2 rounded-lg transition-all">
+                                            ◀ Previous
+                                        </button>
+                                        <button id="btnSaveStep" type="button" onclick="saveActiveStepData()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-5 py-2 rounded-lg transition-all shadow-sm">
+                                            Save Step & Continue
+                                        </button>
+                                        <button type="button" onclick="navigateStep(1)" class="bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-semibold px-4 py-2 rounded-lg transition-all">
+                                            Next Step ▶
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Kanan: Log Masa Sejarah Siap Bagi Semua Fasa -->
+                            <div class="xl:col-span-5 bg-slate-900/60 border border-slate-800 rounded-xl p-4 space-y-4 shadow-md">
+                                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                                    <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                                        📊 Fasa Timestamp Records
+                                    </h3>
+                                    <span class="text-[10px] bg-slate-950 px-2 py-0.5 rounded border border-slate-800 font-mono text-emerald-400 font-bold">8 Steps</span>
+                                </div>
+
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-[11px]">
+                                        <thead>
+                                            <tr class="text-slate-500 border-b border-slate-800/60 pb-2">
+                                                <th class="py-2 font-semibold">Workflow Phase</th>
+                                                <th class="py-2 font-semibold">Status</th>
+                                                <th class="py-2 font-semibold">Time Completed</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="stepHistoryTableBody" class="divide-y divide-slate-850">
+                                            <!-- Rekod masa fasa dijana di sini secara automatik -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEWPORT B: ANTARAMUKA MOD PENGURUS (Dashboard Jadual Penuh) -->
+        <div id="managerViewport" class="hidden space-y-6">
+            
+            <!-- Bahagian Penapis & Kawalan Carian Pengurus -->
+            <div class="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+                <div>
+                    <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <span>Management Oversight Board</span>
+                        <span class="text-xs bg-[#E32619] text-white px-2 py-0.5 rounded font-black tracking-widest font-mono">iep APPROVED</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Global audit screen to supervise active orders, compliance timelines, and inspect logged remarks.</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+                    <!-- Kotak Carian Utama Pengurus -->
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" id="managerSearchInput" oninput="renderManagerTable()" placeholder="Search client or PO..." class="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 pl-3 pr-10 text-xs text-slate-300 focus:outline-none focus:border-emerald-500">
+                        <span class="absolute right-3 top-2.5 text-slate-500 text-xs">🔍</span>
+                    </div>
+
+                    <!-- Pilihan Tab Status Utama Pengurus -->
+                    <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs font-bold">
+                        <button id="tabAll" onclick="setManagerFilter('all')" class="px-3 py-1.5 rounded-md bg-slate-800 text-slate-200">All</button>
+                        <button id="tabActive" onclick="setManagerFilter('active')" class="px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200">In Progress</button>
+                        <button id="tabOverdue" onclick="setManagerFilter('overdue')" class="px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200">Overdue</button>
+                        <button id="tabCompleted" onclick="setManagerFilter('completed')" class="px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200">Completed (100%)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jadual Data Utama Projek -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse font-sans">
+                        <thead>
+                            <tr class="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase tracking-wider text-[10px] font-bold">
+                                <th class="p-4">Customer Name & PO</th>
+                                <th class="p-4">Classification</th>
+                                <th class="p-4">Assignee</th>
+                                <th class="p-4">Due Date</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4">Procedure Progress</th>
+                                <th class="p-4">Active Phase</th>
+                                <th class="p-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="managerTableBody" class="divide-y divide-slate-850">
+                            <!-- Data baris projek dijana di sini secara automatik -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="managerEmptyState" class="hidden text-center py-16 text-slate-500">
+                    <p class="text-4xl">📁</p>
+                    <p class="text-sm font-semibold mt-2">No PO orders matched the selected filter.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Pendaftaran Projek PO Baharu (Worker Mode sahaja) -->
+    <div id="newJobModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-white px-2 py-1 rounded">
+                        <span class="text-xl font-black text-[#E32619] tracking-tighter">iep</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-100">Register New Workshop PO</h3>
+                </div>
+                <button onclick="closeCreateModal()" class="text-slate-400 hover:text-slate-200 text-lg">&times;</button>
+            </div>
+
+            <form id="createJobForm" onsubmit="handleCreateJob(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Client Name *</label>
+                    <input type="text" id="newClientName" required placeholder="e.g. Petronas Carigali Sdn Bhd" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">PO Number *</label>
+                        <input type="text" id="newPoNumber" required placeholder="e.g. PO-2026-8901" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Project Name *</label>
+                        <input type="text" id="newProjectName" required placeholder="e.g. Shell Terminal Ex" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Workshop Job Type *</label>
+                        <select id="newJobType" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                            <option value="IEP Work">IEP Work (Integrated Electrical Panel)</option>
+                            <option value="IET Work">IET Work (Integrated Electrical Terminal)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Date Received *</label>
+                        <input type="date" id="newDateReceive" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Delivery Due Date *</label>
+                        <input type="date" id="newDueDate" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">PIC Assignee *</label>
+                        <input type="text" id="newPic" required placeholder="e.g. Ir. Razali" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Upload Client PO PDF (Simulated)</label>
+                    <input type="file" id="newPoFile" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="closeCreateModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-4 py-2 rounded-lg transition-all">Cancel</button>
+                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-5 py-2 rounded-lg transition-all">Register Job Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Jejak Audit Pengurus (Laporan Isu NCR & Jadual Outstock) -->
+    <div id="inspectionModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <span>🔍</span> Project Audit, Outstock & NCR Trail
+                    </h3>
+                    <p class="text-[10px] text-slate-400 mt-0.5" id="inspectModalSubtitle">Inspect all phase revisions, Outstock items and compliance logs.</p>
+                </div>
+                <button onclick="closeInspectionModal()" class="text-slate-400 hover:text-slate-200 text-xl">&times;</button>
+            </div>
+
+            <div id="inspectContentContainer" class="space-y-4 max-h-[440px] overflow-y-auto pr-2">
+                <!-- Kad-kad ulasan disuntik di sini secara automatik -->
+            </div>
+
+            <div class="flex justify-end pt-3 border-t border-slate-800">
+                <button onclick="closeInspectionModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-bold px-4 py-2 rounded-lg transition-all border border-slate-700">Close Inspection</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Elemen Toast Notifikasi -->
+    <div id="toast" class="fixed bottom-4 right-4 z-50 bg-slate-900 border border-emerald-500 text-emerald-400 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 text-xs font-medium transition-all transform translate-y-20 opacity-0 pointer-events-none duration-300">
+        <span id="toastIcon">✨</span>
+        <span id="toastMessage">Success</span>
+    </div>
+
+    <!-- Integrasi Logik Sistem dan Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'po-workflow-tracker-v1';
+        let firebaseConfig = null;
+        let db = null;
+        let auth = null;
+        let user = null;
+
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+            try {
+                firebaseConfig = JSON.parse(__firebase_config);
+            } catch(e) {
+                console.error("Gagal parse Firebase Config:", e);
+            }
+        }
+
+        // Keadaan Aplikasi Global (Disusun kepada 8 Fasa)
+        let appState = {
+            currentRole: 'worker', 
+            jobs: [],
+            selectedJobId: null,
+            selectedStepIndex: 0, // 0 hingga 7
+            managerFilter: 'all', 
+            workerFilter: 'all'   
+        };
+
+        const MOCK_STORAGE_KEY = 'PROTRACK_MOCK_DATA';
+        
+        // Data Contoh Bagi 8 Fasa
+        const defaultMockJobs = [
+            // ================= 2 PO COMPLETED / CLOSED (100% DONE) =================
+            {
+                id: "po-complete-1",
+                clientName: "Petronas Gas Berhad",
+                poNumber: "PGB-2026-001",
+                projectName: "PGB Smart Control Panel",
+                projectId: "IEP-2026-9081",
+                trackingNumber: "TRK-981273921822",
+                jobType: "IEP Work",
+                dateReceive: "2026-03-01",
+                dueDate: "2026-04-15",
+                picAssign: "En. Fazli Hashim",
+                lastUpdated: new Date().toLocaleTimeString(),
+                currentStep: 8, 
+                isLocked: true, // Project Closed
+                steps: [
+                    { completed: true, completedAt: "2026-03-02 10:00 AM", fields: { clientName: "Petronas Gas Berhad", poNumber: "PGB-2026-001", dateReceive: "2026-03-01", dueDate: "2026-04-15", picAssign: "En. Fazli Hashim", projectName: "PGB Smart Control Panel", projectId: "IEP-2026-9081", trackingNumber: "TRK-981273921822", poStatus: "Approved", fileName: "PO-Petronas-Signed.pdf" } },
+                    { completed: true, completedAt: "2026-03-05 04:30 PM", fields: { supplierName: "Multi-Metal Supply", supplierPoNumber: "SUP-PGB-01", materialList: "IEP Enclosure IP66, Smart Busbar, Terminals, Circuit Breakers", etaMaterial: "2026-03-12", materialStatus: "Complete", fileName: "Supplier_PO_PGB01.pdf" } },
+                    { completed: true, completedAt: "2026-03-15 09:15 AM", fields: { drawingNumber: "DWG-PGB-IEP-001", revisionNumber: "REV0", fileName: "GA_Drawing_PGB_Rev0.pdf", submissionDate: "2026-03-10", approvalDate: "2026-03-14", approvalStatus: "Approved", clientCommentSection: "Approved with minor remarks.", remarkColumn: "None", revisedDwg: "PGB_REV0_FINAL.pdf", revHistory: "REV0 uploaded on 10 March" } },
+                    { completed: true, completedAt: "2026-03-22 06:10 PM", fields: { startFabrication: "true", mechCutting: "true", mechAssembly: "true", elecWiring: "true", elecInstallation: "true", problemRemark: "None", fileName: "Fab_Assembly_Done.jpg" } },
+                    { completed: true, completedAt: "2026-03-25 11:45 AM", fields: { qcInspect: "true", qcFunctional: "true", qcResult: "PASS", qcRemark: "Excellent insulation and load tests passed.", fileNameReport: "QC_Report_PGB.pdf" } },
+                    { completed: true, completedAt: "2026-03-28 02:20 PM", fields: { uploadDwg: "PGB_REV0_FINAL.pdf", uploadQc: "QC_Report_PGB.pdf", uploadTest: "PGB_FAT_Report.pdf", uploadPhotos: "PGB_Assembly.jpg", partNo1: "PGB-CB-01", partDesc1: "Smart Breaker 3-Phase", partQty1: "2", partStatus1: "Outstocked", partRemark1: "Assigned to main panel bus." } },
+                    { completed: true, completedAt: "2026-04-02 04:00 PM", fields: { checkBubble: "true", checkCrate: "true", checkLabel: "true", checkMark: "true", packingStatus: "Packing complete", fileName: "Packing_Photo.jpg" } },
+                    { completed: true, completedAt: "2026-04-10 03:30 PM", fields: { pickupConfirm: "true", rackLocation: "R-09", deliveryArrangement: "Lori 3 Tan", readyDelivery: "true" } }
+                ]
+            },
+            {
+                id: "po-complete-2",
+                clientName: "Shell Trading MY",
+                poNumber: "SH-2026-102",
+                projectName: "Shell Terminal IET Unit",
+                projectId: "IET-2026-1102",
+                trackingNumber: "TRK-092182019281",
+                jobType: "IET Work",
+                dateReceive: "2026-03-10",
+                dueDate: "2026-04-30",
+                picAssign: "Pn. Azura",
+                lastUpdated: new Date().toLocaleTimeString(),
+                currentStep: 8,
+                isLocked: false,
+                steps: [
+                    { completed: true, completedAt: "2026-03-11 09:00 AM", fields: { clientName: "Shell Trading MY", poNumber: "SH-2026-102", dateReceive: "2026-03-10", dueDate: "2026-04-30", picAssign: "Pn. Azura", projectName: "Shell Terminal IET Unit", projectId: "IET-2026-1102", trackingNumber: "TRK-092182019281", poStatus: "Approved", fileName: "Shell_PO_102.pdf" } },
+                    { completed: true, completedAt: "2026-03-15 03:00 PM", fields: { supplierName: "AluTech Trading", supplierPoNumber: "SUP-AL-209", materialList: "IET Terminal Connectors, GRP Junction Box, Mounting brackets", etaMaterial: "2026-03-22", materialStatus: "Complete", fileName: "Supplier_PO_Shell.pdf" } },
+                    { completed: true, completedAt: "2026-03-26 10:30 AM", fields: { drawingNumber: "DWG-SH-IET-09", revisionNumber: "REV0", fileName: "GA_Drawing_Shell.pdf", submissionDate: "2026-03-20", approvalDate: "2026-03-25", approvalStatus: "Approved", clientCommentSection: "No comments.", remarkColumn: "Approved as requested", revisedDwg: "Shell_IET_REV0.pdf", revHistory: "REV0 initialized" } },
+                    { completed: true, completedAt: "2026-04-05 05:00 PM", fields: { startFabrication: "true", mechCutting: "true", mechAssembly: "true", elecWiring: "true", elecInstallation: "true", problemRemark: "None", fileName: "Shell_Assembly.jpg" } },
+                    { completed: true, completedAt: "2026-04-08 11:30 AM", fields: { qcInspect: "true", qcFunctional: "true", qcResult: "PASS", qcRemark: "Electrical continuity fully passed.", fileNameReport: "Shell_QC_Pass.pdf" } },
+                    { completed: true, completedAt: "2026-04-12 02:40 PM", fields: { uploadDwg: "Shell_IET_REV0.pdf", uploadQc: "Shell_QC_Pass.pdf", uploadTest: "Shell_FAT.pdf", uploadPhotos: "Shell_Assembly.jpg", partNo1: "SH-T-02", partDesc1: "GRP Terminal block", partQty1: "15", partStatus1: "Outstocked", partRemark1: "GRP weather-proof block." } },
+                    { completed: true, completedAt: "2026-04-15 04:50 PM", fields: { checkBubble: "true", checkCrate: "true", checkLabel: "true", checkMark: "true", packingStatus: "Packing complete", fileName: "Shell_Packing.jpg" } },
+                    { completed: true, completedAt: "2026-04-22 11:00 AM", fields: { pickupConfirm: "true", rackLocation: "R-12", deliveryArrangement: "Sea Cargo Box", readyDelivery: "true" } }
+                ]
+            },
+
+            // ================= 1 PO IN PROGRESS (80% Completed, through Phase 6) =================
+            {
+                id: "po-prog-80a",
+                clientName: "Lotte Chemical Titan",
+                poNumber: "LCT-9081",
+                projectName: "LCT Smart Meter Console",
+                projectId: "IEP-2026-4402",
+                trackingNumber: "TRK-109283021921",
+                jobType: "IEP Work",
+                dateReceive: "2026-04-10",
+                dueDate: "2026-06-15", 
+                picAssign: "Pn. Azura",
+                lastUpdated: new Date().toLocaleTimeString(),
+                currentStep: 6, 
+                isLocked: false,
+                steps: [
+                    { completed: true, completedAt: "2026-04-11 10:15 AM", fields: { clientName: "Lotte Chemical Titan", poNumber: "LCT-9081", dateReceive: "2026-04-10", dueDate: "2026-06-15", picAssign: "Pn. Azura", projectName: "LCT Smart Meter Console", projectId: "IEP-2026-4402", trackingNumber: "TRK-109283021921", poStatus: "Approved", fileName: "LCT_PO_9081.pdf" } },
+                    { completed: true, completedAt: "2026-04-15 03:00 PM", fields: { supplierName: "Titan Metal Sdn Bhd", supplierPoNumber: "SUP-LCT-01", materialList: "Plat Stainless Steel, IEP Console Housing", etaMaterial: "2026-04-22", materialStatus: "Complete", fileName: "Supplier_PO_LCT.pdf" } },
+                    { completed: true, completedAt: "2026-04-28 11:30 AM", fields: { drawingNumber: "DWG-LCT-002", revisionNumber: "REV2", fileName: "GA_Drawing_LCT.pdf", submissionDate: "2026-04-20", approvalDate: "2026-04-27", approvalStatus: "Approved", clientCommentSection: "Approved with comment", remarkColumn: "Adjusted layout to ergonomic requirements.", revisedDwg: "LCT_REV2_APPROVED.pdf", revHistory: "REV1 rejected. REV2 approved on 27 April" } },
+                    { completed: true, completedAt: "2026-05-10 04:30 PM", fields: { startFabrication: "true", mechCutting: "true", mechAssembly: "true", elecWiring: "true", elecInstallation: "true", problemRemark: "None", fileName: "Fab_LCT.jpg" } },
+                    { completed: true, completedAt: "2026-05-12 11:00 AM", fields: { qcInspect: "true", qcFunctional: "true", qcResult: "PASS", qcRemark: "Passed mechanical dimension review.", fileNameReport: "LCT_QC_Report.pdf" } },
+                    { completed: true, completedAt: "2026-05-15 03:20 PM", fields: { uploadDwg: "LCT_REV2_APPROVED.pdf", uploadQc: "LCT_QC_Report.pdf", uploadTest: "LCT_Insulation_FAT.pdf", uploadPhotos: "LCT_QC.jpg", partNo1: "LCT-CB-M", partDesc1: "Main breaker smart link", partQty1: "1", partStatus1: "Outstocked", partRemark1: "Outstocked for main console panel." } },
+                    { completed: false, fields: {} }, 
+                    { completed: false, fields: {} }
+                ]
+            },
+
+            // ================= 2 PO DELAY / OVERDUE =================
+            {
+                id: "po-delay-1",
+                clientName: "Dialog Group",
+                poNumber: "DG-7712",
+                projectName: "Dialog Smart Pumping Box",
+                projectId: "IEP-2026-1021",
+                trackingNumber: "TRK-092837491029",
+                jobType: "IEP Work",
+                dateReceive: "2026-04-01",
+                dueDate: "2026-05-10", 
+                picAssign: "Ir. Razali",
+                lastUpdated: new Date().toLocaleTimeString(),
+                currentStep: 3, 
+                isLocked: false,
+                steps: [
+                    { completed: true, completedAt: "2026-04-02 09:30 AM", fields: { clientName: "Dialog Group", poNumber: "DG-7712", dateReceive: "2026-04-01", dueDate: "2026-05-10", picAssign: "Ir. Razali", projectName: "Dialog Smart Pumping Box", projectId: "IEP-2026-1021", trackingNumber: "TRK-092837491029", poStatus: "Approved", fileName: "Dialog_PO_7712.pdf" } },
+                    { completed: true, completedAt: "2026-04-08 02:40 PM", fields: { supplierName: "FastSteel Supply", supplierPoNumber: "SUP-DG-01", materialList: "IEP Frame structure, mounting plates, switchgears", etaMaterial: "2026-04-15", materialStatus: "Partial Received", fileName: "PO_FastSteel.pdf" } },
+                    { completed: true, completedAt: "2026-04-20 11:30 AM", fields: { drawingNumber: "DWG-DG-77", revisionNumber: "REV1", fileName: "GA_Drawing_Dialog.pdf", submissionDate: "2026-04-15", approvalDate: "2026-04-19", approvalStatus: "Approved", clientCommentSection: "Approved", remarkColumn: "Verify base plate thickness.", revisedDwg: "Dialog_REV1.pdf", revHistory: "REV0 revised to REV1 with thicker base." } },
+                    { completed: false, fields: { startFabrication: "true", mechCutting: "true", mechAssembly: "false", progressPercentage: "25%", problemRemark: "Material delay" } }, 
+                    { completed: false, fields: {} },
+                    { completed: false, fields: {} },
+                    { completed: false, fields: {} },
+                    { completed: false, fields: {} }
+                ]
+            },
+            {
+                id: "po-delay-2",
+                clientName: "Sapura Energy Berhad",
+                poNumber: "SE-4509",
+                projectName: "Sapura Subsea IET Controller",
+                projectId: "IET-2026-5591",
+                trackingNumber: "TRK-109283921820",
+                jobType: "IET Work",
+                dateReceive: "2026-04-05",
+                dueDate: "2026-05-22", 
+                picAssign: "Pn. Azura",
+                lastUpdated: new Date().toLocaleTimeString(),
+                currentStep: 4, 
+                isLocked: false,
+                steps: [
+                    { completed: true, completedAt: "2026-04-06 10:00 AM", fields: { clientName: "Sapura Energy Berhad", poNumber: "SE-4509", dateReceive: "2026-04-05", dueDate: "2026-05-22", picAssign: "Pn. Azura", projectName: "Sapura Subsea IET Controller", projectId: "IET-2026-5591", trackingNumber: "TRK-109283921820", poStatus: "Approved", fileName: "Sapura_PO.pdf" } },
+                    { completed: true, completedAt: "2026-04-12 04:30 PM", fields: { supplierName: "AluTech Trading", supplierPoNumber: "SUP-SE-21", materialList: "IET Terminals, cabling glands", etaMaterial: "2026-04-18", materialStatus: "Complete", fileName: "Supplier_PO_SE.pdf" } },
+                    { completed: true, completedAt: "2026-04-25 11:45 AM", fields: { drawingNumber: "DWG-SE-IET-04", revisionNumber: "REV0", fileName: "GA_Drawing_Sapura.pdf", submissionDate: "2026-04-18", approvalDate: "2026-04-24", approvalStatus: "Approved", clientCommentSection: "Verify gland orientation", remarkColumn: "None", revisedDwg: "Sapura_REV0.pdf", revHistory: "REV0 finalized" } },
+                    { completed: true, completedAt: "2026-05-05 06:15 PM", fields: { startFabrication: "true", mechCutting: "true", mechAssembly: "true", elecWiring: "true", elecInstallation: "true", problemRemark: "Rework", fileName: "Sapura_Content.jpg" } },
+                    { completed: false, fields: { qcInspect: "true", qcFunctional: "false", qcResult: "FAIL", qcRemark: "Main IET loop failed continuity verification. Flagged for fabrication correction." } }, 
+                    { completed: false, fields: {} },
+                    { completed: false, fields: {} },
+                    { completed: false, fields: {} }
+                ]
+            },
+
+            // ================= 1 PO NEWLY REGISTERED =================
+            {
+                id: "po-new-1",
+                clientName: "Sime Darby Plantation",
+                poNumber: "SDP-NEW-01",
+                projectName: "SDP Smart Bio-Gas Box",
+                projectId: "IEP-2026-8801",
+                trackingNumber: "TRK-912039281920",
+                jobType: "IEP Work",
+                dateReceive: "2026-05-25",
+                dueDate: "2026-07-01",
+                picAssign: "Ir. Razali",
+                lastUpdated: new Date().toLocaleTimeString(),
+                currentStep: 1, 
+                isLocked: false,
+                steps: [
+                    { completed: true, completedAt: "2026-05-26 10:15 AM", fields: { clientName: "Sime Darby Plantation", poNumber: "SDP-NEW-01", dateReceive: "2026-05-25", dueDate: "2026-07-01", picAssign: "Ir. Razali", projectName: "SDP Smart Bio-Gas Box", projectId: "IEP-2026-8801", trackingNumber: "TRK-912039281920", poStatus: "Approved", fileName: "SDP_PO_01.pdf" } },
+                    { completed: false, fields: {} },
+                    { completed: false, fields: {} },
+                    { completed: false, fields: {} },
+                    { completed: false, fields: {} },
+                    { completed: false, fields: {} },
+                    { completed: false, fields: {} },
+                    { completed: false, fields: {} }
+                ]
+            }
+        ];
+
+        // 8 Definisi Fasa Kerja Aliran Bengkel Kerja iep
+        const WORKFLOW_STEPS = [
+            {
+                title: "Client PO",
+                subtitle: "PO Receipt, Approval & Auto-Generation Parameters",
+                icon: "📝",
+                fields: [
+                    { name: "clientName", label: "Client Name", type: "text", required: true },
+                    { name: "poNumber", label: "PO Number", type: "text", required: true },
+                    { name: "projectName", label: "Project Name", type: "text", required: true },
+                    { name: "dateReceive", label: "PO Date", type: "date", required: true },
+                    { name: "dueDate", label: "Delivery Date", type: "date", required: true },
+                    { name: "projectId", label: "Project ID (Auto Generated)", type: "text", disabled: true },
+                    { name: "trackingNumber", label: "Tracking Number (Auto Generated)", type: "text", disabled: true },
+                    { name: "poStatus", label: "Status", type: "select", options: ["Pending", "Approved", "Cancelled"], required: true },
+                    { name: "fileName", label: "Upload PO PDF", type: "file" }
+                ]
+            },
+            {
+                title: "Supplier PO",
+                subtitle: "PO Placement to Hardware/Component Supplier",
+                icon: "🛒",
+                fields: [
+                    { name: "supplierName", label: "Supplier Name", type: "text", required: true },
+                    { name: "supplierPoNumber", label: "Supplier PO Number", type: "text", required: true },
+                    { name: "materialList", label: "Material List", type: "textarea", required: true },
+                    { name: "etaMaterial", label: "ETA Material", type: "date", required: true },
+                    { name: "materialStatus", label: "Material Status", type: "select", options: ["Waiting Material", "Partial Received", "Complete"], required: true },
+                    { name: "materialRemark", label: "Remark", type: "select", options: ["None", "Material Delay", "Out of Stock", "Waiting Delivery"] },
+                    { name: "fileName", label: "Upload Supplier PO PDF", type: "file" }
+                ]
+            },
+            {
+                title: "Drawing Approval",
+                subtitle: "Design GA drawings & client authorization feedback",
+                icon: "📐",
+                fields: [
+                    { name: "drawingNumber", label: "Drawing Number", type: "text", required: true },
+                    { name: "revisionNumber", label: "Revision Number", type: "select", options: ["REV0", "REV1", "REV2", "REV3"], required: true },
+                    { name: "submissionDate", label: "Submission Date", type: "date", required: true },
+                    { name: "approvalDate", label: "Approval Date", type: "date" },
+                    { name: "approvalStatus", label: "Drawing Status Approval", type: "select", options: ["Pending", "Approved", "Approved with Comment", "Rejected"], required: true },
+                    { name: "clientCommentSection", label: "Client Comments / Review", type: "textarea" },
+                    { name: "revHistory", label: "Revision History Record Notes", type: "textarea" },
+                    { name: "remarkColumn", label: "Expected Fabrication Date & Notes", type: "textarea" },
+                    { name: "revisedDwg", label: "Final Approved Drawing Upload", type: "file" }
+                ]
+            },
+            {
+                title: "Fabrication",
+                subtitle: "Production execution and sub-process checklists",
+                icon: "⚡",
+                fields: [
+                    { name: "startFabrication", label: "Fabrication Process Started?", type: "checkbox", default: false },
+                    { name: "sectionHeader1", label: "Process Checklists", type: "heading" },
+                    { name: "mechCutting", label: "Mechanical: Cutting Completed?", type: "checkbox", default: false },
+                    { name: "mechAssembly", label: "Mechanical: Assembly Completed?", type: "checkbox", default: false },
+                    { name: "elecWiring", label: "Electrical: Wiring Completed?", type: "checkbox", default: false },
+                    { name: "elecInstallation", label: "Electrical: Installation Completed?", type: "checkbox", default: false },
+                    { name: "problemRemark", label: "Problem Remark", type: "select", options: ["None", "Missing material", "Wrong dimension", "Rework", "Delay", "Machine issue"] },
+                    { name: "fileName", label: "Upload Work Progress Photo", type: "file" }
+                ]
+            },
+            {
+                title: "QC & Testing",
+                subtitle: "Inspection loops and power testing clearances",
+                icon: "🧪",
+                fields: [
+                    { name: "sectionHeader1", label: "QC Checklist", type: "heading" },
+                    { name: "qcInspect", label: "Inspection Completed?", type: "checkbox", default: false },
+                    { name: "qcFunctional", label: "Functional Test Completed?", type: "checkbox", default: false },
+                    { name: "qcResult", label: "QC Result Status", type: "select", options: ["PASS", "FAIL"], required: true },
+                    { name: "qcRemark", label: "Testing / FAT Inspector Remarks", type: "textarea" },
+                    { name: "fileNameReport", label: "FAT Report PDF", type: "file" },
+                    { name: "fileNamePhotos", label: "QC Session Photos", type: "file" }
+                ]
+            },
+            {
+                title: "Documentation",
+                subtitle: "Final compliance file cataloging & Outstock inventory",
+                icon: "📂",
+                fields: [
+                    { name: "uploadDwg", label: "Drawing Files / As-Built PDF Upload", type: "file" },
+                    { name: "uploadQc", label: "QC Reports PDF Upload", type: "file" },
+                    { name: "uploadTest", label: "Test Reports PDF Upload", type: "file" },
+                    { name: "uploadPhotos", label: "Project Photo File Upload", type: "file" },
+                    { name: "sectionHeader1", label: "Outstock Item Table", type: "heading" },
+                    { name: "partNo1", label: "Part Number", type: "text" },
+                    { name: "partDesc1", label: "Description", type: "text" },
+                    { name: "partQty1", label: "Quantity", type: "number" },
+                    { name: "partStatus1", label: "Status", type: "select", options: ["Pending", "Outstocked", "In-Transit"] },
+                    { name: "partRemark1", label: "Remark", type: "text" }
+                ]
+            },
+            {
+                title: "Packing",
+                subtitle: "Logistics wrapping and compliance markings",
+                icon: "📦",
+                fields: [
+                    { name: "sectionHeader1", label: "Packing Checklist", type: "heading" },
+                    { name: "checkBubble", label: "Bubble wrap Wrapped?", type: "checkbox", default: false },
+                    { name: "checkCrate", label: "Wooden crate Sealed?", type: "checkbox", default: false },
+                    { name: "checkLabel", label: "Label sticker Affixed?", type: "checkbox", default: false },
+                    { name: "checkMark", label: "Shipping mark Visible?", type: "checkbox", default: false },
+                    { name: "packingStatus", label: "Packing Status", type: "select", options: ["Packing in progress", "Ready to ship"], required: true },
+                    { name: "fileName", label: "Upload Packing Photo", type: "file" }
+                ]
+            },
+            {
+                title: "Warehouse",
+                subtitle: "Rack placement and client shipment dispatch",
+                icon: "🚚",
+                fields: [
+                    { name: "pickupConfirm", label: "Pickup Confirmation?", type: "checkbox", default: false },
+                    { name: "rackLocation", label: "Rack Location", type: "text", required: true },
+                    { name: "deliveryArrangement", label: "Delivery Arrangement", type: "textarea", required: true },
+                    { name: "readyDelivery", label: "Ready Delivery?", type: "checkbox", default: false }
+                ]
+            }
+        ];
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            initApp();
+        });
+
+        // Initialize connection parameters and auth variables
+        async function initApp() {
+            setRole('worker'); 
+            setupSliderInteraction();
+
+            if (firebaseConfig) {
+                try {
+                    const initializedApp = initializeApp(firebaseConfig);
+                    auth = getAuth(initializedApp);
+                    db = getFirestore(initializedApp);
+                    updateSyncIndicator('Penyambungan...', 'amber-500');
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+
+                    onAuthStateChanged(auth, (authUser) => {
+                        if (authUser) {
+                            user = authUser;
+                            updateSyncIndicator('Online (Cloud)', 'emerald-500');
+                            setupRealtimeListener();
+                        } else {
+                            updateSyncIndicator('Tiada Akaun', 'red-500');
+                            setupLocalFallback();
+                        }
+                    });
+                } catch (error) {
+                    console.error("Gagal menyambung ke Firestore Cloud. Mengaktifkan mod lokal.", error);
+                    updateSyncIndicator('Lokal (Offline)', 'amber-500');
+                    setupLocalFallback();
+                }
+            } else {
+                updateSyncIndicator('Lokal (Tiada Config)', 'slate-500');
+                setupLocalFallback();
+            }
+        }
+
+        function setupRealtimeListener() {
+            if (!user || !db) return;
+            const jobsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'jobs');
+            
+            onSnapshot(jobsCollection, (snapshot) => {
+                const updatedJobs = [];
+                snapshot.forEach((doc) => {
+                    updatedJobs.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (updatedJobs.length === 0 && appState.jobs.length === 0) {
+                    seedDefaultCloudData(jobsCollection);
+                } else {
+                    appState.jobs = updatedJobs;
+                    refreshUI();
+                    logActivity("System database synced successfully with Cloud.");
+                }
+            }, (error) => {
+                console.error("Kesilapan real-time. Mod simpanan lokal diaktifkan.", error);
+                setupLocalFallback();
+            });
+        }
+
+        async function seedDefaultCloudData(jobsCollection) {
+            logActivity("Initializing cloud seed records...");
+            for (const job of defaultMockJobs) {
+                const docRef = doc(jobsCollection, job.id);
+                await setDoc(docRef, job);
+            }
+        }
+
+        function setupLocalFallback() {
+            const stored = localStorage.getItem(MOCK_STORAGE_KEY);
+            if (stored) {
+                try {
+                    appState.jobs = JSON.parse(stored);
+                } catch(e) {
+                    appState.jobs = defaultMockJobs;
+                }
+            } else {
+                appState.jobs = defaultMockJobs;
+                saveToLocalStorage();
+            }
+            refreshUI();
+            logActivity("Operating on Local Offline Storage.");
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(appState.jobs));
+        }
+
+        function updateSyncIndicator(statusText, colorClass) {
+            const indicatorText = document.getElementById('syncStatusText');
+            const indicatorDot = document.querySelector('#syncIndicator span span:nth-child(2)');
+            const indicatorRing = document.querySelector('#syncIndicator span span:nth-child(1)');
+
+            if (indicatorText) indicatorText.innerText = statusText;
+            if (indicatorDot) indicatorDot.className = `relative inline-flex rounded-full h-2 w-2 bg-${colorClass}`;
+            if (indicatorRing) indicatorRing.className = `animate-ping absolute inline-flex h-full w-full rounded-full bg-${colorClass} opacity-75`;
+        }
+
+        // Switch between Worker & Manager modes
+        window.setRole = function(role) {
+            appState.currentRole = role;
+            const btnWorker = document.getElementById('btnRoleWorker');
+            const btnManager = document.getElementById('btnRoleManager');
+            
+            const workerViewport = document.getElementById('workerViewport');
+            const managerViewport = document.getElementById('managerViewport');
+
+            if (role === 'worker') {
+                btnWorker.className = "px-4 py-1.5 rounded-md text-xs font-bold bg-emerald-500 text-slate-950 shadow-sm transition-all";
+                btnManager.className = "px-4 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-slate-200 transition-all";
+                
+                if (workerViewport) workerViewport.classList.remove('hidden');
+                if (managerViewport) managerViewport.classList.add('hidden');
+            } else {
+                btnWorker.className = "px-4 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-slate-200 transition-all";
+                btnManager.className = "px-4 py-1.5 rounded-md text-xs font-bold bg-emerald-500 text-slate-950 shadow-sm transition-all";
+                
+                if (workerViewport) workerViewport.classList.add('hidden');
+                if (managerViewport) managerViewport.classList.remove('hidden');
+                renderManagerTable();
+            }
+
+            logActivity(`Role switched to: ${role === 'worker' ? 'Worker Mode' : 'Manager view'}`);
+            refreshUI();
+        };
+
+        function refreshUI() {
+            updateDashboardMetrics();
+            if (appState.currentRole === 'worker') {
+                renderJobList();
+                renderActiveWorkstation();
+            } else {
+                renderManagerTable();
+            }
+        }
+
+        // Dashboard statistics logic
+        function updateDashboardMetrics() {
+            const total = appState.jobs.length;
+            let active = 0;
+            let completedCount = 0;
+            let overdueCount = 0;
+
+            const today = new Date("2026-05-29");
+
+            appState.jobs.forEach(job => {
+                const percentage = calculateProgress(job);
+                if (percentage < 100 && !job.isLocked) {
+                    active++;
+                } else if (job.isLocked || percentage === 100) {
+                    completedCount++; 
+                }
+                
+                const isJobCompleted = percentage === 100 || job.isLocked;
+                if (!isJobCompleted && job.dueDate && new Date(job.dueDate) < today) {
+                    overdueCount++;
+                }
+            });
+
+            const statTotal = document.getElementById('statTotal');
+            const statActive = document.getElementById('statActive');
+            const statQC = document.getElementById('statQC');
+            const statOverdue = document.getElementById('statOverdue');
+
+            if (statTotal) statTotal.innerText = total;
+            if (statActive) statActive.innerText = active;
+            if (statQC) statQC.innerText = completedCount; 
+            if (statOverdue) statOverdue.innerText = overdueCount;
+        }
+
+        function calculateProgress(job) {
+            if (!job.steps) return 0;
+            if (job.isLocked) return 100;
+            const completedCount = job.steps.filter(step => step.completed).length;
+            return Math.round((completedCount / WORKFLOW_STEPS.length) * 100);
+        }
+
+        function getJobTypeBadgeStyle(jobType) {
+            switch(jobType) {
+                case "IEP Work":
+                    return "bg-[#E32619]/10 text-[#E32619] border border-[#E32619]/20";
+                case "IET Work":
+                    return "bg-blue-500/10 text-blue-400 border border-blue-500/20";
+                default:
+                    return "bg-slate-300/10 text-slate-300 border border-slate-300/20";
+            }
+        }
+
+        // Tab selection worker filter
+        window.setWorkerFilter = function(filterValue) {
+            appState.workerFilter = filterValue;
+            
+            const tabs = {
+                all: document.getElementById('wTabAll'),
+                active: document.getElementById('wTabActive'),
+                overdue: document.getElementById('wTabOverdue'),
+                completed: document.getElementById('wTabCompleted')
+            };
+
+            Object.keys(tabs).forEach(k => {
+                if (tabs[k]) {
+                    if (k === filterValue) {
+                        tabs[k].className = "py-1.5 rounded bg-slate-800 text-slate-100 text-center transition-all";
+                    } else {
+                        if (k === 'overdue') {
+                            tabs[k].className = "py-1.5 rounded text-rose-400/70 hover:text-rose-400 text-center transition-all";
+                        } else if (k === 'completed') {
+                            tabs[k].className = "py-1.5 rounded text-emerald-400/70 hover:text-emerald-400 text-center transition-all";
+                        } else {
+                            tabs[k].className = "py-1.5 rounded text-slate-400 hover:text-slate-200 text-center transition-all";
+                        }
+                    }
+                }
+            });
+
+            renderJobList();
+        };
+
+        // Render Sidebar job lists (Worker viewport)
+        function renderJobList() {
+            const container = document.getElementById('jobListContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            const filteredJobs = filterJobsMemory();
+
+            if (filteredJobs.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs">No PO records found for this filter.</div>`;
+                return;
+            }
+
+            const today = new Date("2026-05-29");
+
+            filteredJobs.forEach(job => {
+                const progress = calculateProgress(job);
+                const isSelected = appState.selectedJobId === job.id;
+                const isOverdue = progress < 100 && job.dueDate && new Date(job.dueDate) < today && !job.isLocked;
+
+                let currentStepLabel = job.isLocked ? "Closed & Archived" : "Completed (Done)";
+                let currentStepClass = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                
+                const activeStepIdx = job.steps.findIndex(s => !s.completed);
+                if (activeStepIdx !== -1 && !job.isLocked) {
+                    currentStepLabel = `Step ${activeStepIdx + 1}: ${WORKFLOW_STEPS[activeStepIdx].title}`;
+                    currentStepClass = isOverdue 
+                        ? "bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse" 
+                        : "bg-amber-400/10 text-amber-400 border border-amber-400/20";
+                } else if (job.isLocked) {
+                    currentStepClass = "bg-purple-500/10 text-purple-400 border border-purple-500/20";
+                }
+
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-lg border cursor-pointer transition-all ${
+                    isSelected 
+                        ? (isOverdue ? 'bg-slate-900 border-rose-500 shadow-lg shadow-rose-950/20' : 'bg-slate-800 border-emerald-500 shadow-md') 
+                        : 'bg-slate-950/60 border-slate-800 hover:bg-slate-900 hover:border-slate-700'
+                }`;
+                item.onclick = () => selectJob(job.id);
+
+                const typeBadgeClass = getJobTypeBadgeStyle(job.jobType || "IEP Work");
+
+                item.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="font-bold text-slate-100 text-xs truncate max-w-[150px]">${job.clientName}</div>
+                        <span class="text-[9px] text-slate-500 font-medium">${job.lastUpdated || ''}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-[10px] mt-1 text-slate-400">
+                        <span class="font-mono">PO: ${job.poNumber}</span>
+                        <span class="px-1.5 py-0.2 rounded text-[8px] font-extrabold uppercase ${typeBadgeClass}">${job.jobType || 'IEP Work'}</span>
+                    </div>
+                    
+                    <div class="mt-2.5 space-y-1.5">
+                        <div class="flex justify-between items-center text-[10px]">
+                            <span class="${currentStepClass} px-1.5 py-0.5 rounded text-[9px] font-bold truncate max-w-[140px]">${currentStepLabel}</span>
+                            <span class="font-bold ${isOverdue ? 'text-rose-400' : 'text-slate-300'}">${progress}%</span>
+                        </div>
+                        <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                            <div class="h-full ${isOverdue ? 'bg-rose-500' : (job.isLocked ? 'bg-purple-500' : 'bg-gradient-to-r from-emerald-500 to-teal-400')}" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        window.filterJobs = function() {
+            renderJobList();
+        };
+
+        function filterJobsMemory() {
+            const query = document.getElementById('searchInput');
+            const queryVal = query ? query.value.toLowerCase() : "";
+            const today = new Date("2026-05-29");
+
+            return appState.jobs.filter(job => {
+                const matchesSearch = job.clientName.toLowerCase().includes(queryVal) || job.poNumber.toLowerCase().includes(queryVal);
+                if (!matchesSearch) return false;
+
+                const progress = calculateProgress(job);
+                const isOverdue = progress < 100 && job.dueDate && new Date(job.dueDate) < today && !job.isLocked;
+
+                if (appState.workerFilter === 'active') return progress < 100 && !job.isLocked;
+                if (appState.workerFilter === 'overdue') return isOverdue;
+                if (appState.workerFilter === 'completed') return progress === 100 || job.isLocked;
+
+                return true;
+            });
+        }
+
+        window.selectJob = function(jobId) {
+            appState.selectedJobId = jobId;
+            const job = appState.jobs.find(j => j.id === jobId);
+            if (job) {
+                const activeStepIdx = job.steps.findIndex(s => !s.completed);
+                appState.selectedStepIndex = (activeStepIdx === -1 || job.isLocked) ? 7 : activeStepIdx;
+            }
+            refreshUI();
+            logActivity(`Inspecting PO details for: ${job ? job.clientName : ''}`);
+        };
+
+        window.selectFirstJob = function() {
+            const filtered = filterJobsMemory();
+            if (filtered.length > 0) {
+                selectJob(filtered[0].id);
+            }
+        };
+
+        // Render Selected active fasa and detailed form parameter cards
+        function renderActiveWorkstation() {
+            const idle = document.getElementById('workstationIdle');
+            const active = document.getElementById('workstationActive');
+
+            if (!appState.selectedJobId) {
+                if (idle) idle.classList.remove('hidden');
+                if (active) active.classList.add('hidden');
+                return;
+            }
+
+            if (idle) idle.classList.add('hidden');
+            if (active) active.classList.remove('hidden');
+
+            const job = appState.jobs.find(j => j.id === appState.selectedJobId);
+            if (!job) return;
+
+            const today = new Date("2026-05-29");
+            const progress = calculateProgress(job);
+            const isOverdue = progress < 100 && job.dueDate && new Date(job.dueDate) < today && !job.isLocked;
+
+            const headerCard = document.getElementById('wsHeaderCard');
+            const stepVisualCard = document.getElementById('stepVisualCard');
+            const overdueBadge = document.getElementById('overdueBadge');
+
+            if (headerCard && stepVisualCard) {
+                if (isOverdue) {
+                    headerCard.className = "flex flex-col sm:flex-row sm:items-center justify-between border-b border-rose-900/60 pb-4 gap-4 transition-colors duration-300 p-3 rounded-lg bg-rose-950/20";
+                    stepVisualCard.className = "xl:col-span-7 bg-slate-950 border border-rose-950 rounded-xl p-4 sm:p-5 flex flex-col justify-between min-h-[420px] shadow-lg shadow-rose-950/10";
+                    if (overdueBadge) overdueBadge.classList.remove('hidden');
+                } else if (job.isLocked) {
+                    headerCard.className = "flex flex-col sm:flex-row sm:items-center justify-between border-b border-purple-900/60 pb-4 gap-4 transition-colors duration-300 p-3 rounded-lg bg-purple-950/15";
+                    stepVisualCard.className = "xl:col-span-7 bg-slate-950 border border-purple-900/30 rounded-xl p-4 sm:p-5 flex flex-col justify-between min-h-[420px]";
+                    if (overdueBadge) overdueBadge.classList.add('hidden');
+                } else {
+                    headerCard.className = "flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-4 transition-colors duration-300 p-3 rounded-lg bg-slate-950/40";
+                    stepVisualCard.className = "xl:col-span-7 bg-slate-950 border border-slate-800 rounded-xl p-4 sm:p-5 flex flex-col justify-between min-h-[420px]";
+                    if (overdueBadge) overdueBadge.classList.add('hidden');
+                }
+            }
+
+            const typeBadge = document.getElementById('wsBadge');
+            if (typeBadge) {
+                typeBadge.innerText = job.jobType || "IEP Work";
+                typeBadge.className = `text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ${getJobTypeBadgeStyle(job.jobType || "IEP Work")}`;
+            }
+
+            const wsTitle = document.getElementById('wsTitle');
+            const wsProjectName = document.getElementById('wsProjectName');
+            const wsPoNum = document.getElementById('wsPoNum');
+            const wsDueDate = document.getElementById('wsDueDate');
+            const wsProjId = document.getElementById('wsProjId');
+            const wsTrackNum = document.getElementById('wsTrackNum');
+            const wsProgressFill = document.getElementById('wsProgressFill');
+            const wsProgressPercent = document.getElementById('wsProgressPercent');
+            const wsLastUpdate = document.getElementById('wsLastUpdate');
+
+            if (wsTitle) wsTitle.innerText = job.clientName;
+            if (wsProjectName) wsProjectName.innerText = job.projectName || 'Unnamed Project';
+            if (wsPoNum) wsPoNum.innerText = job.poNumber;
+            if (wsDueDate) wsDueDate.innerText = job.dueDate || 'Unassigned';
+            if (wsProjId) wsProjId.innerText = job.projectId || 'N/A';
+            if (wsTrackNum) wsTrackNum.innerText = job.trackingNumber || 'N/A';
+            if (wsProgressFill) wsProgressFill.style.width = `${progress}%`;
+            if (wsProgressPercent) wsProgressPercent.innerText = `${progress}%`;
+            if (wsLastUpdate) wsLastUpdate.innerText = job.lastUpdated || 'No record';
+
+            const timeline = document.getElementById('timelineContainer');
+            if (timeline) {
+                timeline.innerHTML = '';
+                
+                WORKFLOW_STEPS.forEach((step, index) => {
+                    const isStepCompleted = job.steps[index]?.completed;
+                    const isStepSelected = appState.selectedStepIndex === index;
+                    
+                    let stateColor = "border-slate-800 text-slate-500 bg-slate-900/40";
+                    if (isStepCompleted) {
+                        stateColor = "border-emerald-500 bg-emerald-500/10 text-emerald-400";
+                    } else if (isOverdue) {
+                        stateColor = "border-rose-900 bg-rose-950/20 text-rose-400";
+                    }
+                    
+                    if (isStepSelected) {
+                        stateColor = "border-blue-500 ring-2 ring-blue-500/20 bg-slate-800 text-blue-400";
+                    }
+
+                    const btn = document.createElement('button');
+                    btn.className = `flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all text-center select-none ${stateColor}`;
+                    btn.onclick = () => selectStep(index);
+                    btn.innerHTML = `
+                        <span class="text-sm">${step.icon}</span>
+                        <span class="text-[9px] font-bold mt-1 tracking-tight truncate max-w-full block">Phase ${index+1}</span>
+                        <span class="text-[8px] opacity-75 mt-0.5 truncate max-w-full">${isStepCompleted ? 'Done' : (isOverdue ? 'Overdue' : 'Active')}</span>
+                    `;
+                    timeline.appendChild(btn);
+                });
+            }
+
+            const activeStep = WORKFLOW_STEPS[appState.selectedStepIndex];
+            const jobStepData = job.steps[appState.selectedStepIndex] || { completed: false, fields: {} };
+            
+            const stepIcon = document.getElementById('stepIcon');
+            const stepTitle = document.getElementById('stepTitle');
+            const stepSubtitle = document.getElementById('stepSubtitle');
+
+            if (stepIcon) stepIcon.innerText = activeStep.icon;
+            if (stepTitle) stepTitle.innerText = `Step ${appState.selectedStepIndex + 1}: ${activeStep.title}`;
+            if (stepSubtitle) stepSubtitle.innerText = activeStep.subtitle;
+
+            setSafetySliderState(jobStepData.completed);
+
+            // Constraint: Drawing status approval rule. ONLY Approved drawing can next step.
+            const dependencyAlert = document.getElementById('dependencyAlert');
+            const form = document.getElementById('activeStepForm');
+            const btnSaveStep = document.getElementById('btnSaveStep');
+            const safetySliderTrack = document.getElementById('safetySliderTrack');
+
+            let drawingApproved = false;
+            const dwgStep = job.steps[2]; // Drawing Approval Step (idx 2)
+            if (dwgStep && dwgStep.completed && dwgStep.fields && (dwgStep.fields.approvalStatus === 'Approved' || dwgStep.fields.approvalStatus === 'Approved with Comment')) {
+                drawingApproved = true;
+            }
+
+            const isBlocked = (appState.selectedStepIndex >= 3 && !drawingApproved);
+
+            if (dependencyAlert) {
+                if (isBlocked) {
+                    dependencyAlert.classList.remove('hidden');
+                    dependencyAlert.innerHTML = `
+                        <p class="font-extrabold flex items-center gap-1.5 text-rose-400">
+                            <span>🔒</span> PROGRESS LOCKED
+                        </p>
+                        <p class="mt-1 opacity-90 text-[10px]">You cannot input fabrication metrics or progress beyond without first obtaining Client Drawing Approval (Phase 3 status must be set as Approved/Approved with Comment).</p>
+                    `;
+                } else if (job.isLocked) {
+                    dependencyAlert.classList.remove('hidden');
+                    dependencyAlert.innerHTML = `
+                        <p class="font-extrabold flex items-center gap-1.5 text-purple-400">
+                            <span>🔒</span> PROJECT LOCKED (ARCHIVED)
+                        </p>
+                        <p class="mt-1 opacity-90 text-[10px]">This project has been closed and archived. All modification privileges are disabled.</p>
+                    `;
+                } else {
+                    dependencyAlert.classList.add('hidden');
+                }
+            }
+
+            if (form) {
+                form.innerHTML = '';
+
+                activeStep.fields.forEach(f => {
+                    const wrapper = document.createElement('div');
+                    
+                    if (f.type === 'heading') {
+                        wrapper.className = "col-span-1 sm:col-span-2 pt-2 border-t border-slate-900";
+                        const headingEl = document.createElement('h4');
+                        headingEl.className = "text-xs font-bold text-slate-300 uppercase tracking-widest";
+                        headingEl.innerText = f.label;
+                        wrapper.appendChild(headingEl);
+                        form.appendChild(wrapper);
+                        return;
+                    }
+
+                    wrapper.className = "space-y-1";
+                    if (f.type === 'textarea') wrapper.className = "space-y-1 sm:col-span-2";
+
+                    const label = document.createElement('label');
+                    label.className = "block text-xs font-semibold text-slate-400";
+                    label.innerText = f.label;
+                    wrapper.appendChild(label);
+
+                    // Auto Populate generated identifiers
+                    let currentVal = jobStepData.fields?.[f.name] !== undefined ? jobStepData.fields[f.name] : '';
+                    if (appState.selectedStepIndex === 0 && f.name === 'projectId' && !currentVal) {
+                        currentVal = job.projectId || `IEP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+                        job.projectId = currentVal;
+                    }
+                    if (appState.selectedStepIndex === 0 && f.name === 'trackingNumber' && !currentVal) {
+                        currentVal = job.trackingNumber || `TRK-${Date.now()}${Math.floor(10 + Math.random() * 90)}`;
+                        job.trackingNumber = currentVal;
+                    }
+
+                    let input;
+                    if (f.type === 'textarea') {
+                        input = document.createElement('textarea');
+                        input.rows = 2;
+                        input.placeholder = "Enter reports / notes for this workshop phase...";
+                        input.value = currentVal;
+                    } else if (f.type === 'select') {
+                        input = document.createElement('select');
+                        f.options.forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt;
+                            option.innerText = opt;
+                            if (opt === currentVal) option.selected = true;
+                            input.appendChild(option);
+                        });
+
+                        // Trigger Warning Alert Box for "FAIL" result in QC Process
+                        if (appState.selectedStepIndex === 4 && f.name === 'qcResult') {
+                            const warningBox = document.createElement('div');
+                            warningBox.id = "qcFailReturnAlert";
+                            warningBox.className = "hidden col-span-1 sm:col-span-2 bg-rose-950/40 border border-rose-500/30 p-3 rounded-lg text-rose-300 text-xs mt-2";
+                            warningBox.innerHTML = `
+                                <p class="font-extrabold flex items-center gap-1.5">
+                                    <span>⚠️</span> AUTO RETURN TRIGGER ACTIVE
+                                </p>
+                                <p class="mt-1 opacity-90 text-[11px]">Saving this step with status FAIL will automatically roll back the project procedure sequence to Phase 4 (Fabrication Process) for revision work.</p>
+                            `;
+                            
+                            input.onchange = (e) => {
+                                if (e.target.value === 'FAIL') {
+                                    warningBox.classList.remove('hidden');
+                                } else {
+                                    warningBox.classList.add('hidden');
+                                }
+                            };
+                            
+                            wrapper.appendChild(input);
+                            wrapper.appendChild(warningBox);
+                            form.appendChild(wrapper);
+                            
+                            // Check initial load
+                            if (currentVal === 'FAIL') {
+                                warningBox.classList.remove('hidden');
+                            }
+                            return;
+                        }
+                    } else if (f.type === 'checkbox') {
+                        input = document.createElement('input');
+                        input.type = 'checkbox';
+                        input.className = "rounded border-slate-800 text-emerald-500 bg-slate-950 h-5 w-5 block cursor-pointer mt-1";
+                        input.checked = currentVal === true || currentVal === 'true';
+                    } else if (f.type === 'range') {
+                        const flexDiv = document.createElement('div');
+                        flexDiv.className = "flex items-center space-x-3";
+                        
+                        input = document.createElement('input');
+                        input.type = 'range';
+                        input.min = f.min;
+                        input.max = f.max;
+                        input.value = currentVal || '0';
+                        input.className = "flex-1 accent-emerald-500 h-2 bg-slate-900 rounded-lg cursor-pointer";
+                        
+                        const valueDisplay = document.createElement('span');
+                        valueDisplay.className = "text-xs font-mono font-bold bg-slate-900 px-2 py-1 rounded text-emerald-400 min-w-[40px] text-center";
+                        valueDisplay.innerText = `${input.value}%`;
+                        
+                        input.oninput = (e) => {
+                            valueDisplay.innerText = `${e.target.value}%`;
+                        };
+                        
+                        flexDiv.appendChild(input);
+                        flexDiv.appendChild(valueDisplay);
+                        wrapper.appendChild(flexDiv);
+                        
+                        input.name = f.name;
+                        form.appendChild(wrapper);
+                        return;
+                    } else if (f.type === 'file') {
+                        const fileGroup = document.createElement('div');
+                        fileGroup.className = "flex items-center space-x-3 bg-slate-950 p-2 rounded-lg border border-slate-800";
+                        
+                        const fileInput = document.createElement('input');
+                        fileInput.type = 'file';
+                        fileInput.className = "hidden";
+                        fileInput.id = `fileInput_${f.name}`;
+                        
+                        const fileButton = document.createElement('button');
+                        fileButton.type = "button";
+                        fileButton.className = "bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold px-3 py-1.5 rounded";
+                        fileButton.innerText = "Select File";
+                        
+                        const fileLabel = document.createElement('span');
+                        fileLabel.className = "text-[10px] text-slate-400 truncate flex-1";
+                        fileLabel.innerText = currentVal ? `📎 ${currentVal}` : "No file uploaded";
+
+                        fileButton.onclick = () => fileInput.click();
+                        fileInput.onchange = (e) => {
+                            if (e.target.files.length > 0) {
+                                const fname = e.target.files[0].name;
+                                fileLabel.innerText = `📎 ${fname}`;
+                                fileInput.dataset.fileNameValue = fname;
+                            }
+                        };
+
+                        fileGroup.appendChild(fileInput);
+                        fileGroup.appendChild(fileButton);
+                        fileGroup.appendChild(fileLabel);
+                        wrapper.appendChild(fileGroup);
+                        
+                        // Disable if locked or blocked
+                        if (isBlocked || job.isLocked) {
+                            fileButton.disabled = true;
+                        }
+
+                        form.appendChild(wrapper);
+                        return;
+                    } else {
+                        input = document.createElement('input');
+                        input.type = f.type;
+                        input.value = currentVal;
+                    }
+
+                    input.name = f.name;
+                    if (!f.disabled) {
+                        input.className = "w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 transition-all";
+                    } else {
+                        input.disabled = true;
+                        input.className = "w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-400 cursor-not-allowed font-semibold font-mono";
+                    }
+                    if (f.type === 'checkbox') input.className = "rounded border-slate-800 text-emerald-500 bg-slate-950 h-5 w-5 block cursor-pointer mt-1";
+                    
+                    // Disable all controls if blocked or locked
+                    if (isBlocked || job.isLocked) {
+                        input.disabled = true;
+                        if (input.className.includes("bg-slate-950")) {
+                            input.className = input.className.replace("bg-slate-950", "bg-slate-900 opacity-60 cursor-not-allowed");
+                        }
+                    }
+
+                    wrapper.appendChild(input);
+                    form.appendChild(wrapper);
+                });
+            }
+
+            // Disable main action controls if blocked or locked
+            if (btnSaveStep) {
+                if (isBlocked || job.isLocked) {
+                    btnSaveStep.disabled = true;
+                    btnSaveStep.className = "bg-slate-800 text-slate-500 font-bold text-xs px-5 py-2 rounded-lg cursor-not-allowed shadow-sm";
+                } else {
+                    btnSaveStep.disabled = false;
+                    btnSaveStep.className = "bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-5 py-2 rounded-lg transition-all shadow-sm";
+                }
+            }
+
+            // Inject special operational buttons into Phase 8 (Warehouse)
+            if (appState.selectedStepIndex === 7 && form) {
+                const actionContainer = document.createElement('div');
+                actionContainer.className = "col-span-1 sm:col-span-2 pt-4 border-t border-slate-900 mt-4 flex items-center justify-between";
+
+                const labelClose = document.createElement('span');
+                labelClose.className = "text-[11px] text-slate-400";
+                labelClose.innerText = job.isLocked ? "🔒 Project Locked & Completed" : "⚡ Actions to Conclude Project:";
+
+                const btnClose = document.createElement('button');
+                btnClose.type = "button";
+                if (job.isLocked) {
+                    btnClose.className = "bg-purple-900/40 border border-purple-500/20 text-purple-300 font-extrabold text-xs px-4 py-2 rounded-lg cursor-not-allowed shadow-md";
+                    btnClose.innerText = "🔒 Project Closed";
+                    btnClose.disabled = true;
+                } else {
+                    btnClose.className = "bg-[#E32619] hover:bg-red-700 text-slate-50 font-black text-xs px-4 py-2 rounded-lg transition-all shadow-md animate-pulse";
+                    btnClose.innerText = "📁 Close & Archive Project";
+                    btnClose.onclick = () => triggerCloseProject(job.id);
+                }
+
+                actionContainer.appendChild(labelClose);
+                actionContainer.appendChild(btnClose);
+                form.appendChild(actionContainer);
+            }
+
+            renderHistoryTable(job);
+        }
+
+        function renderHistoryTable(job) {
+            const tableBody = document.getElementById('stepHistoryTableBody');
+            if (!tableBody) return;
+            tableBody.innerHTML = '';
+
+            WORKFLOW_STEPS.forEach((step, index) => {
+                const stepData = job.steps[index];
+                const isCompleted = stepData?.completed;
+                const completedAt = stepData?.completedAt || 'Pending Completion';
+
+                const statusBadgeClass = isCompleted 
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                    : "bg-slate-950 text-slate-500 border-slate-800";
+
+                const row = document.createElement('tr');
+                row.className = `hover:bg-slate-850/40 transition-colors border-b border-slate-800/40 ${appState.selectedStepIndex === index ? 'bg-slate-800/30' : ''}`;
+                
+                row.innerHTML = `
+                    <td class="py-2.5 font-medium flex items-center gap-2 cursor-pointer" onclick="selectStep(${index})">
+                        <span class="text-xs">${step.icon}</span>
+                        <div>
+                            <p class="font-bold text-[11px] text-slate-300">Phase ${index+1}</p>
+                            <p class="text-[10px] text-slate-500 truncate max-w-[120px]">${step.title}</p>
+                        </div>
+                    </td>
+                    <td class="py-2.5">
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold border ${statusBadgeClass}">
+                            ${isCompleted ? '✓ DONE' : '⏳ ACTIVE'}
+                        </span>
+                    </td>
+                    <td class="py-2.5 text-[10px] font-mono text-slate-400">
+                        ${completedAt}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        let isSlidCompleted = false;
+
+        function setupSliderInteraction() {
+            const sliderTrack = document.getElementById('safetySliderTrack');
+            if (!sliderTrack) return;
+            
+            sliderTrack.onclick = function(e) {
+                const job = appState.jobs.find(j => j.id === appState.selectedJobId);
+                if (appState.currentRole === 'manager' || (job && job.isLocked)) return;
+                toggleSafetyState();
+            };
+        }
+
+        function toggleSafetyState() {
+            isSlidCompleted = !isSlidCompleted;
+            setSafetySliderState(isSlidCompleted);
+        }
+
+        function setSafetySliderState(completed) {
+            isSlidCompleted = completed;
+            const thumb = document.getElementById('safetySliderThumb');
+            const track = document.getElementById('safetySliderTrack');
+            const leftLabel = document.getElementById('slideLabelLeft');
+            const rightLabel = document.getElementById('slideLabelRight');
+
+            if (!thumb || !track) return;
+
+            if (completed) {
+                thumb.style.transform = `translateX(190px)`;
+                thumb.innerText = "🔓";
+                thumb.className = "safety-slider-thumb w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-xs font-black shadow-lg cursor-pointer border border-emerald-400 z-10 transition-transform duration-300";
+                track.className = "safety-slider-track w-full sm:w-60 h-10 bg-emerald-950/40 border border-emerald-500/30 rounded-full flex items-center p-1 cursor-pointer overflow-hidden relative";
+                if(leftLabel) leftLabel.className = "absolute left-4 text-[10px] font-bold text-slate-600 pointer-events-none select-none";
+                if(rightLabel) rightLabel.className = "absolute right-4 text-[10px] font-bold text-emerald-400 pointer-events-none select-none";
+            } else {
+                thumb.style.transform = `translateX(0px)`;
+                thumb.innerText = "🔒";
+                thumb.className = "safety-slider-thumb w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-black shadow-lg cursor-pointer border border-slate-600 z-10 transition-transform duration-300";
+                track.className = "safety-slider-track w-full sm:w-60 h-10 bg-slate-900 border border-slate-800 rounded-full flex items-center p-1 cursor-pointer overflow-hidden relative";
+                if(leftLabel) leftLabel.className = "absolute left-4 text-[10px] font-bold text-rose-500 pointer-events-none select-none";
+                if(rightLabel) rightLabel.className = "absolute right-4 text-[10px] font-bold text-slate-600 pointer-events-none select-none";
+            }
+        }
+
+        window.selectStep = function(stepIdx) {
+            appState.selectedStepIndex = stepIdx;
+            renderActiveWorkstation();
+        };
+
+        window.navigateStep = function(direction) {
+            let nextIndex = appState.selectedStepIndex + direction;
+            if (nextIndex >= 0 && nextIndex < WORKFLOW_STEPS.length) {
+                appState.selectedStepIndex = nextIndex;
+                renderActiveWorkstation();
+            }
+        };
+
+        // Saving step data logic with QC Fail auto-rollback support
+        window.saveActiveStepData = async function(showToastAlert = true) {
+            if (appState.currentRole === 'manager') return;
+
+            const job = appState.jobs.find(j => j.id === appState.selectedJobId);
+            if (!job || job.isLocked) return;
+
+            const activeStep = WORKFLOW_STEPS[appState.selectedStepIndex];
+            const updatedFields = {};
+
+            activeStep.fields.forEach(f => {
+                const element = document.querySelector(`[name="${f.name}"]`);
+                if (f.type === 'file') {
+                    const fileInput = document.getElementById(`fileInput_${f.name}`);
+                    const val = fileInput?.dataset.fileNameValue || job.steps[appState.selectedStepIndex]?.fields?.[f.name] || '';
+                    updatedFields[f.name] = val;
+                } else if (f.type === 'checkbox') {
+                    updatedFields[f.name] = element ? element.checked : false;
+                } else if (f.type !== 'heading') {
+                    updatedFields[f.name] = element ? element.value : '';
+                }
+            });
+
+            // Write generated fields directly back to Root PO
+            if (appState.selectedStepIndex === 0) {
+                job.projectId = updatedFields.projectId || job.projectId;
+                job.trackingNumber = updatedFields.trackingNumber || job.trackingNumber;
+                job.projectName = updatedFields.projectName || job.projectName;
+            }
+
+            const isCompleted = isSlidCompleted;
+
+            let isValid = true;
+            activeStep.fields.forEach(f => {
+                if (f.required && !updatedFields[f.name]) {
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                triggerNotification("⚠️ Please fill in all required fields first.", "amber-500");
+                return;
+            }
+
+            if (isCompleted && !job.steps[appState.selectedStepIndex].completed) {
+                const now = new Date();
+                const formattedDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
+                job.steps[appState.selectedStepIndex].completedAt = formattedDate;
+            } else if (!isCompleted) {
+                job.steps[appState.selectedStepIndex].completedAt = "";
+            }
+
+            job.steps[appState.selectedStepIndex].fields = updatedFields;
+            job.steps[appState.selectedStepIndex].completed = isCompleted;
+            job.lastUpdated = new Date().toLocaleTimeString();
+
+            // Auto Return Trigger: If Phase 5 (QC & Testing, idx 4) fails, return sequence back to Phase 4 (Fabrication, idx 3)
+            if (appState.selectedStepIndex === 4 && updatedFields.qcResult === 'FAIL') {
+                job.steps[3].completed = false; // Step 4 Fabrication returned
+                job.steps[4].completed = false; // Step 5 QC Reset
+                job.steps[3].completedAt = "";
+                job.steps[4].completedAt = "";
+                job.currentStep = 3; // Reset step back to Step 4 active
+                appState.selectedStepIndex = 3; // Shift worker focus view back to step 4
+                
+                triggerNotification("🛑 Quality Check FAILED. Automatically returning PO sequence back to Phase 4!", "rose-500");
+                logActivity(`QC Failed for ${job.clientName}. Returned to fabrication.`);
+            } 
+            // Phase 7 (Packing) constraint: complete triggers system auto notice
+            else if (appState.selectedStepIndex === 6 && isCompleted && updatedFields.packingStatus === 'Ready to ship') {
+                triggerNotification("📢 SYSTEM NOTICE: WAREHOUSE READY TO PICKUP!", "blue-400");
+                logActivity(`Packing completed for ${job.clientName}. Ready to pickup.`);
+                const firstPendingIdx = job.steps.findIndex(s => !s.completed);
+                job.currentStep = firstPendingIdx === -1 ? 8 : firstPendingIdx;
+            }
+            else {
+                const firstPendingIdx = job.steps.findIndex(s => !s.completed);
+                job.currentStep = firstPendingIdx === -1 ? 8 : firstPendingIdx;
+                if (showToastAlert) {
+                    triggerNotification("✅ Step progress saved successfully!");
+                }
+            }
+
+            try {
+                if (db && user) {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'jobs', job.id);
+                    await updateDoc(docRef, {
+                        steps: job.steps,
+                        currentStep: job.currentStep,
+                        lastUpdated: job.lastUpdated,
+                        projectId: job.projectId,
+                        trackingNumber: job.trackingNumber,
+                        projectName: job.projectName
+                    });
+                } else {
+                    saveToLocalStorage();
+                    refreshUI();
+                }
+                
+                logActivity(`Updated Step ${appState.selectedStepIndex + 1} for ${job.clientName}.`);
+            } catch (err) {
+                console.error("Gagal menyelaras data dengan awan:", err);
+                triggerNotification("⚠️ Local save completed offline.", "red-500");
+                saveToLocalStorage();
+                refreshUI();
+            }
+        };
+
+        // Close and Archive Project Action
+        async function triggerCloseProject(jobId) {
+            const job = appState.jobs.find(j => j.id === jobId);
+            if (!job || job.isLocked) return;
+
+            job.isLocked = true;
+            job.lastUpdated = new Date().toLocaleTimeString();
+            logActivity("Project Closed & Archived: " + job.clientName);
+            triggerNotification("📁 Project Closed and Archived successfully!", "purple-400");
+
+            try {
+                if (db && user) {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'jobs', job.id);
+                    await updateDoc(docRef, {
+                        isLocked: true,
+                        lastUpdated: job.lastUpdated
+                    });
+                } else {
+                    saveToLocalStorage();
+                    refreshUI();
+                }
+            } catch (e) {
+                console.error("Gagal menutup proyek di cloud:", e);
+                saveToLocalStorage();
+                refreshUI();
+            }
+        }
+
+        window.openCreateModal = function() {
+            const modal = document.getElementById('newJobModal');
+            if (modal) modal.classList.remove('hidden');
+            
+            const today = new Date().toISOString().split('T')[0];
+            const dateRecInput = document.getElementById('newDateReceive');
+            if (dateRecInput) dateRecInput.value = today;
+            
+            const future = new Date();
+            future.setDate(future.getDate() + 15);
+            const dueDateInput = document.getElementById('newDueDate');
+            if (dueDateInput) dueDateInput.value = future.toISOString().split('T')[0];
+        };
+
+        window.closeCreateModal = function() {
+            const modal = document.getElementById('newJobModal');
+            if (modal) modal.classList.add('hidden');
+            const form = document.getElementById('createJobForm');
+            if (form) form.reset();
+        };
+
+        window.handleCreateJob = async function(event) {
+            event.preventDefault();
+
+            const clientName = document.getElementById('newClientName').value;
+            const poNumber = document.getElementById('newPoNumber').value;
+            const projectName = document.getElementById('newProjectName').value;
+            const jobType = document.getElementById('newJobType').value;
+            const picAssign = document.getElementById('newPic').value;
+            const dateReceive = document.getElementById('newDateReceive').value;
+            const dueDate = document.getElementById('newDueDate').value;
+            const poFile = document.getElementById('newPoFile');
+            
+            const fileName = (poFile && poFile.files.length > 0) ? poFile.files[0].name : 'PO_Client_Lokal.pdf';
+            const now = new Date();
+            const formattedDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
+
+            // Auto-Generate tracking numbers
+            const generatedProjId = `IEP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+            const generatedTrack = `TRK-${Date.now()}${Math.floor(10 + Math.random() * 90)}`;
+
+            // Step templating fitted to 8 Steps
+            const newSteps = Array.from({ length: 8 }, (_, i) => ({
+                completed: i === 0,
+                completedAt: i === 0 ? formattedDate : "",
+                fields: i === 0 ? {
+                    clientName, poNumber, projectName, picAssign, dateReceive, dueDate, fileName,
+                    projectId: generatedProjId, trackingNumber: generatedTrack, poStatus: "Approved"
+                } : {}
+            }));
+
+            const newJob = {
+                id: `job-${Date.now()}`,
+                clientName,
+                poNumber,
+                projectName,
+                projectId: generatedProjId,
+                trackingNumber: generatedTrack,
+                jobType,
+                picAssign,
+                dateReceive,
+                dueDate,
+                lastUpdated: new Date().toLocaleTimeString(),
+                currentStep: 1, 
+                isLocked: false,
+                steps: newSteps
+            };
+
+            try {
+                if (db && user) {
+                    const jobsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'jobs');
+                    await setDoc(doc(jobsCollection, newJob.id), newJob);
+                } else {
+                    appState.jobs.push(newJob);
+                    saveToLocalStorage();
+                    refreshUI();
+                }
+
+                logActivity("Registered new order: " + clientName);
+                triggerNotification(`🎯 New PO for ${clientName} registered successfully.`);
+                closeCreateModal();
+                selectJob(newJob.id);
+            } catch (err) {
+                console.error("Gagal simpan PO baru ke awan:", err);
+                triggerNotification("⚠️ Saved to local storage.", "red-500");
+                appState.jobs.push(newJob);
+                saveToLocalStorage();
+                refreshUI();
+                closeCreateModal();
+            }
+        };
+
+        window.setManagerFilter = function(filterValue) {
+            appState.managerFilter = filterValue;
+            
+            const tabs = {
+                all: document.getElementById('tabAll'),
+                active: document.getElementById('tabActive'),
+                overdue: document.getElementById('tabOverdue'),
+                completed: document.getElementById('tabCompleted')
+            };
+
+            Object.keys(tabs).forEach(k => {
+                if (tabs[k]) {
+                    if (k === filterValue) {
+                        tabs[k].className = "px-3 py-1.5 rounded-md bg-slate-800 text-slate-200";
+                    } else {
+                        tabs[k].className = "px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200";
+                    }
+                }
+            });
+
+            renderManagerTable();
+        };
+
+        // Render big executive data table (Manager view)
+        window.renderManagerTable = function() {
+            const tbody = document.getElementById('managerTableBody');
+            const emptyState = document.getElementById('managerEmptyState');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const queryInput = document.getElementById('managerSearchInput');
+            const query = queryInput ? queryInput.value.toLowerCase() : "";
+            const today = new Date("2026-05-29");
+
+            const filtered = appState.jobs.filter(job => {
+                const progress = calculateProgress(job);
+                const isOverdue = progress < 100 && job.dueDate && new Date(job.dueDate) < today && !job.isLocked;
+                
+                const matchesSearch = job.clientName.toLowerCase().includes(query) || job.poNumber.toLowerCase().includes(query);
+                if (!matchesSearch) return false;
+
+                if (appState.managerFilter === 'completed') return progress === 100 || job.isLocked;
+                if (appState.managerFilter === 'active') return progress < 100 && !job.isLocked;
+                if (appState.managerFilter === 'overdue') return isOverdue;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if (emptyState) emptyState.classList.add('hidden');
+
+            filtered.forEach(job => {
+                const progress = calculateProgress(job);
+                const isOverdue = progress < 100 && job.dueDate && new Date(job.dueDate) < today && !job.isLocked;
+
+                const rowClass = job.isLocked 
+                    ? 'bg-purple-950/5 hover:bg-purple-950/10 transition-all border-purple-900/10' 
+                    : (isOverdue ? 'bg-rose-950/10 hover:bg-rose-950/15 transition-all' : 'hover:bg-slate-850 transition-all');
+                
+                let statusBadge = `<span class="px-2 py-1 rounded text-[9px] font-bold bg-amber-400/10 text-amber-400 border border-amber-400/20">IN PROGRESS</span>`;
+                if (job.isLocked) {
+                    statusBadge = `<span class="px-2 py-1 rounded text-[9px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">ARCHIVED</span>`;
+                } else if (progress === 100) {
+                    statusBadge = `<span class="px-2 py-1 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">COMPLETED</span>`;
+                } else if (isOverdue) {
+                    statusBadge = `<span class="px-2 py-1 rounded text-[9px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse">🔴 OVERDUE</span>`;
+                }
+
+                let activeStepLabel = "Archived";
+                let activeStepIdx = job.steps.findIndex(s => !s.completed);
+                if (activeStepIdx !== -1 && !job.isLocked) {
+                    activeStepLabel = `Phase ${activeStepIdx + 1}: ${WORKFLOW_STEPS[activeStepIdx].title}`;
+                } else if (progress === 100) {
+                    activeStepLabel = "Dispatched";
+                }
+
+                const typeBadgeClass = getJobTypeBadgeStyle(job.jobType || "IEP Work");
+
+                const tr = document.createElement('tr');
+                tr.className = `${rowClass} border-b border-slate-800/60`;
+
+                tr.innerHTML = `
+                    <td class="p-4">
+                        <div class="font-extrabold text-slate-100 text-xs">${job.clientName}</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5 font-mono">PO No: ${job.poNumber} | ${job.projectName || ''}</div>
+                    </td>
+                    <td class="p-4">
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase ${typeBadgeClass}">${job.jobType || 'IEP Work'}</span>
+                    </td>
+                    <td class="p-4 font-semibold text-slate-300 text-xs">${job.picAssign}</td>
+                    <td class="p-4 font-mono text-xs ${isOverdue ? 'text-rose-400 font-extrabold' : 'text-slate-400'}">${job.dueDate || '--'}</td>
+                    <td class="p-4">${statusBadge}</td>
+                    <td class="p-4">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-xs text-slate-300">${progress}%</span>
+                            <div class="w-20 bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800 flex-shrink-0">
+                                <div class="h-full ${isOverdue ? 'bg-rose-500' : (job.isLocked ? 'bg-purple-500' : 'bg-gradient-to-r from-emerald-500 to-teal-400')}" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-4 text-xs font-semibold text-slate-300 truncate max-w-[140px]">${activeStepLabel}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="openInspectSpecificJob('${job.id}')" class="bg-blue-500 hover:bg-blue-600 text-slate-950 font-black text-[10px] px-3 py-1.5 rounded-lg transition-all shadow-md">
+                            🔍 Audit Trail & Outstock
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        // Open detailed compliance audit remarks modal
+        window.openInspectSpecificJob = function(jobId) {
+            const job = appState.jobs.find(j => j.id === jobId);
+            if (!job) return;
+
+            const inspectModalSubtitle = document.getElementById('inspectModalSubtitle');
+            if (inspectModalSubtitle) inspectModalSubtitle.innerText = `Compliance audit log & Outstock records for [${job.clientName}] | PO: ${job.poNumber}`;
+            
+            const container = document.getElementById('inspectContentContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            let issueCount = 0;
+            const today = new Date("2026-05-29");
+
+            // Look for any Outstock item inputs (found in Phase 6 Documentation)
+            const docStep = job.steps[5]; // Documentation (idx 5)
+            if (docStep && docStep.fields && docStep.fields.partNo1) {
+                const outstockBlock = document.createElement('div');
+                outstockBlock.className = "bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2";
+                outstockBlock.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-900 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">📦</span>
+                            <span class="text-xs font-bold text-slate-200">Documentation: Outstock Item Table</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto text-[11px] pt-1">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="text-slate-500 font-bold border-b border-slate-900">
+                                    <th class="py-1">Part Number</th>
+                                    <th class="py-1">Description</th>
+                                    <th class="py-1">Quantity</th>
+                                    <th class="py-1">Status</th>
+                                    <th class="py-1">Remark</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="text-slate-300">
+                                    <td class="py-2 font-mono font-bold">${docStep.fields.partNo1}</td>
+                                    <td class="py-2">${docStep.fields.partDesc1 || ''}</td>
+                                    <td class="py-2 font-mono">${docStep.fields.partQty1 || '0'}</td>
+                                    <td class="py-2">
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold">
+                                            ${docStep.fields.partStatus1 || 'Outstocked'}
+                                        </span>
+                                    </td>
+                                    <td class="py-2 text-slate-400 italic">${docStep.fields.partRemark1 || 'None'}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                container.appendChild(outstockBlock);
+                issueCount++;
+            }
+
+            job.steps.forEach((step, index) => {
+                const stepMeta = WORKFLOW_STEPS[index];
+                const fields = step.fields || {};
+                const remarks = [];
+
+                if (fields.problemRemark && fields.problemRemark !== 'None') {
+                    remarks.push({ type: 'Non-Compliance Record (NCR)', label: 'Fabrication Issue', value: fields.problemRemark, color: 'text-rose-400 bg-rose-500/10 border-rose-500/20' });
+                }
+                if (fields.qcResult === 'FAIL') {
+                    remarks.push({ type: 'Quality Rejection (FAIL)', label: 'QC Outcome', value: fields.qcRemark || 'Failed standard verification procedures.', color: 'text-rose-400 bg-rose-500/10 border-rose-500/20' });
+                }
+                if (fields.remarkColumn) {
+                    remarks.push({ type: 'Engineering / Process Notes', label: 'Expected Milestones', value: fields.remarkColumn, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' });
+                }
+                if (fields.clientCommentSection) {
+                    remarks.push({ type: 'Client Feedback', label: 'Client Approver Comments', value: fields.clientCommentSection, color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' });
+                }
+                if (fields.qcRemark && fields.qcResult !== 'FAIL') {
+                    remarks.push({ type: 'Quality Release Approval', label: 'QC Inspector Clearance', value: fields.qcRemark, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' });
+                }
+                if (fields.materialRemark && fields.materialRemark !== 'None') {
+                    remarks.push({ type: 'Supply Chain Issue', label: 'Material Remark', value: fields.materialRemark, color: 'text-rose-400 bg-rose-500/10 border-rose-500/20' });
+                }
+                if (fields.revHistory) {
+                    remarks.push({ type: 'Revision Records', label: 'Drawing History Track', value: fields.revHistory, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' });
+                }
+
+                const isOverdue = !step.completed && index === job.currentStep && job.dueDate && new Date(job.dueDate) < today && !job.isLocked;
+                if (isOverdue) {
+                    remarks.push({ type: 'Schedule Out-Of-Bounds', label: 'Delay Warning', value: `This step has exceeded the required PO due date (${job.dueDate})!`, color: 'text-rose-400 bg-rose-500/10 border-rose-500/20 font-bold animate-pulse' });
+                }
+
+                if (remarks.length > 0) {
+                    issueCount++;
+                    const block = document.createElement('div');
+                    block.className = "bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2";
+                    
+                    block.innerHTML = `
+                        <div class="flex items-center justify-between border-b border-slate-900 pb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">${stepMeta.icon}</span>
+                                <span class="text-xs font-bold text-slate-200">Phase ${index+1}: ${stepMeta.title}</span>
+                            </div>
+                            <span class="text-[10px] bg-slate-900 text-slate-500 px-2 py-0.5 rounded font-mono">${step.completed ? 'Done' : 'Active'}</span>
+                        </div>
+                        <div class="space-y-2 pt-1" id="remarks_list_${index}"></div>
+                    `;
+                    container.appendChild(block);
+
+                    const listContainer = block.querySelector(`#remarks_list_${index}`);
+                    if (listContainer) {
+                        remarks.forEach(r => {
+                            const row = document.createElement('div');
+                            row.className = `p-2.5 rounded-lg border text-xs flex flex-col gap-1 ${r.color}`;
+                            row.innerHTML = `
+                                <div class="flex items-center justify-between font-bold text-[10px] uppercase tracking-wider opacity-90">
+                                    <span>${r.type}</span>
+                                    <span>${r.label}</span>
+                                </div>
+                                <p class="text-slate-300 mt-0.5 text-[11px] leading-relaxed">${r.value}</p>
+                            `;
+                            listContainer.appendChild(row);
+                        });
+                    }
+                }
+            });
+
+            if (issueCount === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-500 space-y-2">
+                        <p class="text-3xl">✨</p>
+                        <p class="text-xs font-semibold">No issues, delays, or outstock tables registered for this PO.</p>
+                        <p class="text-[10px] text-slate-600">All IEP / IET assembly specs match the standard guidelines.</p>
+                    </div>
+                `;
+            }
+
+            const modal = document.getElementById('inspectionModal');
+            if (modal) modal.classList.remove('hidden');
+        };
+
+        window.closeInspectionModal = function() {
+            const modal = document.getElementById('inspectionModal');
+            if (modal) modal.classList.add('hidden');
+        };
+
+        function triggerNotification(message, colorClass = "emerald-500") {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toastMessage');
+            
+            if (toast && msg) {
+                toast.className = `fixed bottom-4 right-4 z-50 bg-slate-900 border border-${colorClass} text-slate-100 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 text-xs font-medium transition-all transform duration-300 translate-y-0 opacity-100`;
+                msg.innerText = message;
+
+                setTimeout(() => {
+                    toast.className = `fixed bottom-4 right-4 z-50 bg-slate-900 border border-${colorClass} text-slate-100 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 text-xs font-medium transition-all transform translate-y-20 opacity-0 pointer-events-none duration-300`;
+                }, 3500);
+            }
+        }
+
+        function logActivity(text) {
+            const logBox = document.getElementById('activityLog');
+            if (!logBox) return;
+            if (logBox.innerText.includes("No activity detected yet")) {
+                logBox.innerHTML = '';
+            }
+
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const item = document.createElement('div');
+            item.className = "flex justify-between items-start space-x-2 border-b border-slate-900 pb-1";
+            item.innerHTML = `
+                <span class="text-slate-300 text-[11px]">${text}</span>
+                <span class="text-slate-500 font-mono flex-shrink-0 text-[9px]">${time}</span>
+            `;
+            logBox.prepend(item);
+
+            while (logBox.children.length > 15) {
+                logBox.removeChild(logBox.lastChild);
+            }
+        }
+    </script>
+</body>
+</html>
